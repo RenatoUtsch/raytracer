@@ -39,7 +39,7 @@ set( RAYTRACER_DEFINITIONS "" )
 # Add gcc options
 if( UNIX )
     set( RAYTRACER_DEFINITIONS
-        "${RAYTRACER_DEFINITIONS} -Wall -Wextra -Werror -Wno-deprecated-declarations -Wno-unused-parameter -Wno-comment -g3 -pg" )
+        "${RAYTRACER_DEFINITIONS} -Wall -Wextra -Werror -Wno-deprecated-declarations -Wno-unused-parameter -Wno-comment" )
 endif()
 
 # Boids sources

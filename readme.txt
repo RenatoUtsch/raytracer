@@ -10,6 +10,8 @@ Passos:
 1. Extrair o zip do TP para uma nova pasta.
 2. Navegar até essa pasta com o terminal.
 3. Executar o comando: "make"
+4. Copiar o conteúdo da pasta "testes" para a pasta "bin".
+5. Executar o arquivo bin/raytracer como especificado pelo TP.
 
 Para muma maior flexibilidade, também é possível utilizar o CMake.
 Os passos estão a seguir:
@@ -18,6 +20,8 @@ Os passos estão a seguir:
 3. Navegar até a pasta "build" com o terminal.
 4. Executar o comando: "cmake .."
 5. Executar o comando: "make"
+6. Copiar o conteúdo da pasta "testes" para a pasta "bin".
+7. Executar o arquivo build/raytracer como especificado pelo TP.
 
 Um executável de nome raytracer será gerado e poderá ser
 executado por "./raytracer".
