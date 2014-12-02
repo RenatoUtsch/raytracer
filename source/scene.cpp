@@ -29,6 +29,7 @@
 #include "rayTracer.hpp"
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 /**
  * Maximum depth of recursion from the raytracer.

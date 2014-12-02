@@ -30,6 +30,7 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 
 void fatalErrorFunc(const char *file, int line, const char *format, ...) {
     va_list args;

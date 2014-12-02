@@ -38,12 +38,29 @@ static Vector reflectionDirection(const Vector &dir, const Vector &normal) {
     return (dir + (2 * normal * c)).normalize();
 }
 
-static Vector transmissionDirection(float refrRate, const Vector &dir,
-        const Vector &normal) {
-    float c1 = Vector::dot((-1) * dir, normal);
-    float c2 = sqrt(1.0f - std::pow(refrRate, 2) * (1 - std::pow(c1, 2)));
+static bool transmissionDirection(double refrRate, const Vector &dir,
+        const Vector &normal, Vector &transDir) {
+    Vector invDir = dir * (-1);
+    double c1 = Vector::dot(invDir, normal);
+    double c2 = 1.0f - std::pow(refrRate, 2) * (1.0f - std::pow(c1, 2));
+    Vector v;
+    double marreta = 3;
 
-    return (refrRate * dir) + (refrRate * c1 - c2) * normal;
+    if(c2 < -FLT_EPSILON) { // Total internal reflection.
+        v = normal * 2 * c1;
+        transDir = v - invDir;
+        return true;
+    }
+    else if(c2 > FLT_EPSILON) { // Refraction.
+        c2 = std::sqrt(c2 + marreta); // Marretagem.
+        transDir =  (normal * (refrRate * c1 - c2)) + (dir * refrRate);
+        return true;
+    }
+    else { // Parallel ray.
+        return false;
+    }
+
+    //return (refrRate * dir) + (refrRate * c1 - c2) * normal;
 }
 
 Color rayTracer(Scene &scene, const Point &p, const Vector &dir, size_t depth,
@@ -52,7 +69,7 @@ Color rayTracer(Scene &scene, const Point &p, const Vector &dir, size_t depth,
     Object obj;
     Color c;
     Vector normal;
-    bool inside;
+    bool inside = false;
 
     // If the ray does not intersect with any object, just return the ambient
     // light color.
@@ -122,8 +139,9 @@ Color rayTracer(Scene &scene, const Point &p, const Vector &dir, size_t depth,
     if(depth > 0) {
         // Reflected component added in recursively.
         Vector reflDir = reflectionDirection(dir, normal);
-        reflectionColor = obj.material().reflectionCoef
-            * rayTracer(scene, q, reflDir, depth - 1, &obj);
+        reflectionColor += rayTracer(scene, q, reflDir, depth - 1, &obj)
+            * obj.material().reflectionCoef;
+
 
         // If inside the object invert the refraction rate.
         float refrRate = 1.0f / obj.material().refractionRate;
@@ -131,13 +149,15 @@ Color rayTracer(Scene &scene, const Point &p, const Vector &dir, size_t depth,
             refrRate = obj.material().refractionRate;
 
         // Transmission component added in recursively.
-        Vector transDir = transmissionDirection(refrRate, dir, normal);
-        transmissionColor = obj.material().transmissionCoef
-            * rayTracer(scene, q, transDir, depth - 1, &obj);
+        Vector transDir;
+        if(transmissionDirection(refrRate, dir, normal, transDir)) {
+            transmissionColor += rayTracer(scene, q, transDir, depth - 1, &obj)
+                * obj.material().transmissionCoef;
+        }
     }
 
     // specular color needs a sum.
-    Color finalColor = ambientColor + diffuseColor + reflectionColor + transmissionColor;
+    Color finalColor = ambientColor + diffuseColor;
 
-    return (c * finalColor + specularColor).clamp();
+    return (c * finalColor + reflectionColor + transmissionColor + specularColor).clamp();
 }

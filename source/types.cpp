@@ -41,7 +41,7 @@ const Material &Object::material() const {
 Color Object::color(const Point &p) const {
     const Texture &tex = texture();
     int val;
-    float s, r;
+    double s, r;
     int i, j;
 
     switch(tex.type) {
@@ -68,8 +68,12 @@ Color Object::color(const Point &p) const {
                 + tex.map.p1.y * p.y
                 + tex.map.p1.z * p.z
                 + tex.map.p1.w;
-            i = (int)(r * tex.map.ppm.data.size()) % tex.map.ppm.data.size();
-            j = (int)(s * tex.map.ppm.data.at(0).size()) % tex.map.ppm.data.at(0).size();
-            return tex.map.ppm.data[i][j];
+            i = (int)(r * tex.map.ppm.height) % tex.map.ppm.height;
+            j = (int)(s * tex.map.ppm.width) % tex.map.ppm.width;
+            if(i < 0) i += tex.map.ppm.height;
+            if(j < 0) j += tex.map.ppm.width;
+            return tex.map.ppm.data.at(i).at(j);
     }
+
+    throw std::runtime_error("Invalid texture type");
 }

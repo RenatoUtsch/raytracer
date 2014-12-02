@@ -28,7 +28,7 @@
 CC=g++
 
 # Compiler flags
-CFLAGS=-Wall -Wextra -Werror -Wno-unused-parameter -pedantic
+CFLAGS=-Wall -Wextra -Werror
 
 # Create object file compiler flag
 OBJ=-c
@@ -57,26 +57,18 @@ FOLDER_DEL=rm
 FOLDER_DEL_FLAGS=-f -r
 
 # dependency files
-OBJS=.obj/error.o .obj/intersection.o .obj/main.o .obj/parser.o .obj/rayTracer.o .obj/scene.o
-DEPS=source/Color.hpp source/error.hpp source/intersection.hpp source/parser.hpp source/raytracer.hpp source/scene.hpp source/types.hpp source/math/math.hpp source/math/Matrix.hpp source/math/Plane.hpp source/math/Point.hpp source/math/Vector.hpp
 
 # General rules
 
 all: folder_create raytracer
 
-raytracer: $(OBJS)
-	$(CC) $(CFLAGS) $(OUT) bin/raytracer $(OBJS) $(PREDEF_LIBS)
+raytracer: source/*.cpp source/*.hpp source/math/*.hpp
+	$(CC) $(CFLAGS) $(OUT) bin/raytracer  $(PREDEF_LIBS) source/*.cpp
 
 folder_create:
-	$(FOLDER_CREATE) $(FOLDER_CREATE_FLAGS) .obj
 	$(FOLDER_CREATE) $(FOLDER_CREATE_FLAGS) bin
 
 clean:
-	$(FOLDER_DEL) $(FOLDER_DEL_FLAGS) .obj
 	$(FOLDER_DEL) $(FOLDER_DEL_FLAGS) bin
 
-# compilation rules
-
-.obj/%.o: source/%.c $(DEPS)
-	$(CC) $(CFLAGS) $(OUT) $@ $(OBJ) $<
 

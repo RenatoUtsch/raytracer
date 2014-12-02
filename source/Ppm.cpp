@@ -42,7 +42,6 @@ void Ppm::load(const std::string &file) {
     int maxColor;
 
     getline(in, line);
-    line.erase(remove_if(line.begin(), line.end(), isspace));
     if(line != "P6")
         throw std::runtime_error("Invalid ppm file");
 

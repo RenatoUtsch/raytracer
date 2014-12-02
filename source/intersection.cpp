@@ -29,6 +29,7 @@
 #include "math/Plane.hpp"
 #include <vector>
 #include <cfloat>
+#include <cstdlib>
 
 /**
  * Intersection with spheres.
@@ -89,6 +90,7 @@ static float polyhedronIntersection(const Object &obj, const Point &origin,
     float t;
     float t0 = 0.0f, t1 = FLT_MAX;
     Point p;
+    Vector nT0, nT1;
     const std::vector<Plane> &planes = obj.polyhedron.planes;
 
     /**
@@ -101,7 +103,7 @@ static float polyhedronIntersection(const Object &obj, const Point &origin,
         float dn = Vector::dot(dir, n); // hu
         float val = Vector::dot(p0, n) + planes[i].d; // hp
 
-        if(dn < FLT_EPSILON && dn > -FLT_EPSILON) {
+        if(dn <= FLT_EPSILON && dn >= -FLT_EPSILON) {
             if(val > FLT_EPSILON)
                 t1 = -1.0f;
         }
@@ -110,14 +112,14 @@ static float polyhedronIntersection(const Object &obj, const Point &origin,
             if(t < t1) {
                 // Replace the furthest point.
                 t1 = t;
-                normal = n;
+                nT1 = n;
             }
         }
         if(dn < -FLT_EPSILON) {
             t = -val / dn;
             if(t > t0) {
                 t0 = t;
-                normal = n;
+                nT0 = n;
             }
         }
     }
@@ -132,16 +134,15 @@ static float polyhedronIntersection(const Object &obj, const Point &origin,
 
     if(t1 < t0)
         return -1.0f;
-    if(std::abs(t0) < FLT_EPSILON && (t1 >= t0) && t1 < FLT_MAX) {
-        normal = normal * (-1);
-        normal.normalize();
+    if(std::abs(t0) <= FLT_EPSILON && (t1 >= t0) && t1 < FLT_MAX) {
+        normal = (nT1 * (-1)).normalize();
         if(t1 < maxT)
             return t1;
         else
             return -1.0f;
     }
     if(t0 > FLT_EPSILON && t1 >= t0) {
-        normal.normalize();
+        normal = nT0.normalize();
         if(t0 < maxT)
             return t0;
         else
@@ -162,7 +163,7 @@ bool intersection(Scene &scene, const Point &origin, const Vector &dir,
     // Temporarily store the intersections.
     const Object *closestObj = NULL;
     float closestObjT = FLT_MAX;
-    bool closestInside;
+    bool closestInside = false;
     bool i;
     float t;
     Vector n;
@@ -213,9 +214,14 @@ bool intersection(Scene &scene, const Point &origin, const Vector &dir,
         switch(intersectedObj.type) {
             case SphereObjectType:
                 normal = (intersection - intersectedObj.sphere.pos).normalize();
+                if(inside)
+                    *inside = false;
 
-                if(closestInside)
+                if(closestInside) {
                     normal = normal * (-1);
+                    if(inside)
+                        *inside = true;
+                }
 
                 /*
                 // If the origin is inside the sphere the normal is inverted.
